@@ -196,7 +196,12 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+vim.keymap.set('n', '<leader>tr', '<cmd>terminal<CR><cmd>startinsert<CR>', { noremap = true, silent = true, desc = 'Open new terminal' })
+vim.keymap.set('n', '<leader>ba', '<cmd>%bd|e#|bd#<CR>')
 
+local termfeatures = vim.g.termfeatures or {}
+termfeatures.osc52 = false
+vim.g.termfeatures = termfeatures
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 -- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
@@ -422,7 +427,8 @@ require('lazy').setup({
 
           -- Jump to the implementation of the word under your cursor.
           -- Useful when your language has ways of declaring types without an actual implementation.
-          vim.keymap.set('n', 'gri', builtin.lsp_implementations, { buffer = buf, desc = '[G]oto [I]mplementation' })
+          -- builtin.lsp_implementations,
+          vim.keymap.set('n', 'gri', vim.lsp.buf.implementation, { buffer = buf, desc = '[G]oto [I]mplementation' })
 
           -- Jump to the definition of the word under your cursor.
           -- This is where a variable was first declared, or where a function is defined, etc.
@@ -441,6 +447,8 @@ require('lazy').setup({
           -- Useful when you're not sure what type a variable is and you want to see
           -- the definition of its *type*, not where it was *defined*.
           vim.keymap.set('n', 'grt', builtin.lsp_type_definitions, { buffer = buf, desc = '[G]oto [T]ype Definition' })
+          -- move to source/header file
+          vim.keymap.set('n', 'gsh', '<cmd>LspClangdSwitchSourceHeader<CR>', { buffer = buf, desc = 'Switch source <-> header' })
         end,
       })
 
@@ -592,9 +600,19 @@ require('lazy').setup({
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --  See `:help lsp-config` for information about keys and how to configure
+      vim.filetype.add {
+        extension = {
+          h = 'cpp',
+          hpp = 'cpp',
+          cc = 'cpp',
+        },
+      }
       local servers = {
-        clangd = {},
-        -- gopls = {},
+        clangd = {
+          cmd = { '/opt/llvm/bin/clangd', '--clang-tidy', '--background-index' },
+        },
+        gopls = {},
+        -- lua_language_server = {},
         -- pyright = {},
         -- rust_analyzer = {},
         --
@@ -879,15 +897,23 @@ require('lazy').setup({
       'nvim-tree/nvim-web-devicons', -- Optional, but recommended for icons
     },
     config = function()
-      require('neo-tree').setup({
+      require('neo-tree').setup {
         filesystem = {
+          filtered_items = {
+            hide_dotfiles = false, -- Set to false to show hidden files by default
+            visible = true,
+          },
           follow_current_file = {
-            enable = true,
+            enabled = true,
             leave_dirs_open = false,
           },
-          use_libuv_file_watcher = true,
+          find_args = {
+            fd = { '--max-depth', '1' },
+            find = { '-maxdepth', 0 },
+          },
+          -- use_libuv_file_watcher = true,
         },
-      })
+      }
       -- Set up the plugin options and keymaps here
       vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { desc = 'Toggle file explorer' })
       -- Add other configurations as needed (see Neo-tree documentation)
