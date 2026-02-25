@@ -198,6 +198,7 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 vim.keymap.set('n', '<leader>tr', '<cmd>terminal<CR><cmd>startinsert<CR>', { noremap = true, silent = true, desc = 'Open new terminal' })
 vim.keymap.set('n', '<leader>ba', '<cmd>%bd|e#|bd#<CR>')
+vim.keymap.set('n', '<leader>xx', '<cmd>Trouble diagnostics<CR>', { silent = true, remap = true })
 
 local termfeatures = vim.g.termfeatures or {}
 termfeatures.osc52 = false

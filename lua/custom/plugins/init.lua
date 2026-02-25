@@ -40,4 +40,22 @@ return {
       { '<c-s>', mode = { 'c' }, function() require('flash').toggle() end, desc = 'Toggle Flash Search' },
     },
   },
+  {
+    -- Snippet Engine
+    { 'L3MON4D3/LuaSnip' },
+    -- Snippet Collection (friendly-snippets includes C++ snippets)
+    { 'rafamadriz/friendly-snippets' },
+    -- Autocompletion Plugin
+    {
+      'hrsh7th/nvim-cmp',
+      dependencies = { 'L3MON4D3/LuaSnip' }, -- Ensure LuaSnip is a dependency
+    },
+    -- Optional: A specific C++ tool for advanced refactoring (like include guards)
+    { 'pogyomo/cppguard.nvim' },
+  },
+  {
+    'folke/trouble.nvim',
+    opts = {}, -- Use opts = {} for default options, or customize as needed
+    cmd = 'Trouble', -- Optional: lazy-load on command
+  },
 }
