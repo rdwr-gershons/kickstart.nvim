@@ -147,7 +147,7 @@ vim.o.splitbelow = true
 --  It is very similar to `vim.o` but offers an interface for conveniently interacting with tables.
 --   See `:help lua-options`
 --   and `:help lua-guide-options`
-vim.o.list = true
+vim.o.list = false
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
@@ -903,20 +903,28 @@ require('lazy').setup({
           filtered_items = {
             hide_dotfiles = false, -- Set to false to show hidden files by default
             visible = true,
+            hide_by_name = {
+              'bazel-out',
+              'bazel-waas_enforcer',
+              'bazel-bin',
+              'bazel-genfiles',
+              'bazel-testlogs',
+            },
           },
           follow_current_file = {
             enabled = true,
             leave_dirs_open = false,
           },
           find_args = {
-            fd = { '--max-depth', '1' },
-            find = { '-maxdepth', 0 },
+            fd = { '--max-depth', '5' },
+            find = { '-maxdepth', 5 },
           },
           -- use_libuv_file_watcher = true,
         },
       }
       -- Set up the plugin options and keymaps here
       vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { desc = 'Toggle file explorer' })
+      vim.keymap.set('n', '<leader>b', ':Neotree toggle buffers left<CR>', { desc = 'Toggle buffers explorer' })
       -- Add other configurations as needed (see Neo-tree documentation)
     end,
   },
