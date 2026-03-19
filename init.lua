@@ -633,8 +633,10 @@ require('lazy').setup({
       -- You can press `g?` for help in this menu.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
+        'bash-language-server',
         'lua-language-server', -- Lua Language server
         'stylua', -- Used to format Lua code
+        'buf',
         -- You can add other tools here that you want Mason to install
       })
 
@@ -672,6 +674,10 @@ require('lazy').setup({
         },
       })
       vim.lsp.enable 'lua-language-server'
+
+      -- Special config for bash LSP
+      --vim.lsp.config('bash-language-server', {})
+      vim.lsp.enable 'bashls'
     end,
   },
 

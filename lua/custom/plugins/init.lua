@@ -33,7 +33,7 @@ return {
     ---@type Flash.Config
     opts = {},
     keys = {
-      { 's', mode = { 'n', 'x', 'o' }, function() require('flash').jump() end, desc = 'Flash' },
+      { 'e', mode = { 'n', 'x', 'o' }, function() require('flash').jump() end, desc = 'Flash' },
       { 'S', mode = { 'n', 'x', 'o' }, function() require('flash').treesitter() end, desc = 'Flash Treesitter' },
       { 'r', mode = 'o', function() require('flash').remote() end, desc = 'Remote Flash' },
       { 'R', mode = { 'o', 'x' }, function() require('flash').treesitter_search() end, desc = 'Treesitter Search' },
@@ -90,5 +90,60 @@ return {
   },
   {
     'krady21/compiler-explorer.nvim',
+  },
+  {
+    'mrjones2014/mdpreview.nvim',
+    ft = 'markdown', -- you can lazy load on markdown files only
+    -- requires the `terminal` filetype to render ASCII color and format codes
+    dependencies = { 'norcalli/nvim-terminal.lua', config = true },
+    config = function()
+      require('mdpreview').setup {
+        cli_args = {
+          'glow',
+          '-w',
+          '1',
+        },
+        filetypes = { 'markdown', 'markdown.pandoc', 'markdown.gfm' },
+      }
+    end,
+  },
+  {
+    'kevinhwang91/nvim-ufo',
+    dependencies = {
+      'kevinhwang91/promise-async',
+    },
+    event = 'VeryLazy', -- Load early to handle initial folds
+    init = function()
+      -- Option: Disable foldcolumn for a cleaner look, or set to 1
+      vim.o.foldcolumn = '1'
+      vim.o.foldlevel = 99 -- High level to open all folds by default
+      vim.o.foldlevelstart = 99
+      vim.o.foldenable = true
+      -- Modern fold icons
+      vim.o.fillchars = [[eob: ,fold: ,foldopen:,foldsep: ,foldinner: ,foldclose:]]
+    end,
+    config = function()
+      require('ufo').setup {
+        provider_selector = function(bufnr, filetype, buftype)
+          return { 'lsp', 'indent' } -- Uses LSP for folding, falls back to indent
+        end,
+      }
+    end,
+  },
+  {
+    'nvimdev/lspsaga.nvim',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter', -- optional
+      'nvim-tree/nvim-web-devicons', -- optional
+    },
+    keys = {
+      { 'K', '<cmd>Lspsaga hover_doc<cr>', desc = 'Hover symbol doc' },
+      { 'grf', '<cmd>Lspsaga finder<cr>', desc = 'Find symbol references' },
+      { 'grfi', '<cmd>Lspsaga finder imp<cr>', desc = 'Find implementations of interfaces' },
+    },
+    -- init = function()
+    --   vim.keymap.set('n', 'K', '<cmd>Lspsaga hover_doc<CR>')
+    -- end,
+    config = function() require('lspsaga').setup {} end,
   },
 }

@@ -52,4 +52,21 @@ return {
       end,
     },
   },
+  {
+    'kdheepak/lazygit.nvim',
+    cmd = {
+      'Lazygit',
+      'LazygitConfig',
+      'LazygitCurrentFile',
+      'LazygitCurrentLine',
+      'LazygitDir',
+      'LazygitFile',
+      'LazygitFilter',
+      'LazygitGlobCurrentFile',
+      'LazygitGlobCurrentDir',
+    },
+    keys = {
+      { '<leader>gg', '<cmd>LazyGit<CR>', desc = 'Open Lazygit' },
+    },
+  },
 }
