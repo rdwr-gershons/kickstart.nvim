@@ -114,8 +114,16 @@ vim.o.showmode = false
 vim.o.spell = true
 vim.o.spelllang = 'en_us'
 vim.o.termguicolors = true
--- Set red undercurl for misspelled words
-vim.api.nvim_set_hl(0, 'SpellBad', { undercurl = true, sp = 'Red' })
+vim.api.nvim_create_autocmd('ColorScheme', {
+  pattern = '*',
+  callback = function()
+    -- Use undercurl for modern terminals, or underline
+    vim.api.nvim_set_hl(0, 'SpellBad', { bg = '#5f0000', undercurl = true, sp = 'red' })
+    vim.api.nvim_set_hl(0, 'SpellCap', { bg = '#5f5f00', undercurl = true, sp = 'blue' })
+    vim.api.nvim_set_hl(0, 'SpellLocal', { undercurl = true, sp = 'cyan' })
+    vim.api.nvim_set_hl(0, 'SpellRare', { undercurl = true, sp = 'magenta' })
+  end,
+})
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
@@ -197,7 +205,8 @@ vim.diagnostic.config {
   jump = { float = true },
 }
 
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>qq', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>qp', vim.diagnostic.setqflist, { desc = 'Open [P]roject diagnostic quickfix list' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
