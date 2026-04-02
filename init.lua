@@ -113,6 +113,9 @@ vim.o.showmode = false
 -- Enable spell check
 vim.o.spell = true
 vim.o.spelllang = 'en_us'
+vim.o.termguicolors = true
+-- Set red undercurl for misspelled words
+vim.api.nvim_set_hl(0, 'SpellBad', { undercurl = true, sp = 'Red' })
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
@@ -168,6 +171,9 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
+-- required for completion panel
+vim.o.completeopt = 'menu,menuone,noselect'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -203,6 +209,22 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 vim.keymap.set('n', '<leader>tr', '<cmd>terminal<CR><cmd>startinsert<CR>', { noremap = true, silent = true, desc = 'Open new terminal' })
 vim.keymap.set('n', '<leader>ba', '<cmd>%bd|e#|bd#<CR>')
 vim.keymap.set('n', '<leader>xx', '<cmd>Trouble diagnostics<CR>', { silent = true, remap = true })
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'yaml',
+  callback = function()
+    vim.opt.tabstop = 2
+    vim.opt.softtabstop = 2
+    vim.opt.shiftwidth = 2
+    vim.opt.expandtab = true
+    vim.opt.autoindent = true
+    vim.opt.smartindent = true
+    vim.opt.indentexpr = nil
+  end,
+})
+-- Minimal Syntax Highlighting
+vim.cmd 'syntax on'
+vim.cmd 'filetype plugin indent on'
 
 local termfeatures = vim.g.termfeatures or {}
 termfeatures.osc52 = false
@@ -620,7 +642,7 @@ require('lazy').setup({
       }
       local servers = {
         clangd = {
-          cmd = { '/opt/llvm/bin/clangd', '--clang-tidy', '--background-index' },
+          cmd = { '/opt/llvm/bin/clangd', '--clang-tidy', '--background-index', '--completion-style=detailed' },
         },
         gopls = {
           completeUnimported = true,
@@ -651,6 +673,7 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'bash-language-server',
         'lua-language-server', -- Lua Language server
+        'yaml-language-server', -- YAML Language server
         'stylua', -- Used to format Lua code
         'buf',
         -- You can add other tools here that you want Mason to install
@@ -727,6 +750,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        go = { 'goimports', 'gofmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -902,12 +926,18 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     config = function()
-      local filetypes = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+      local filetypes = { 'bash', 'c', 'cpp', 'go', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
       require('nvim-treesitter').install(filetypes)
       vim.api.nvim_create_autocmd('FileType', {
         pattern = filetypes,
         callback = function() vim.treesitter.start() end,
       })
+      require('nvim-treesitter.config').setup {
+        highlight = {
+          enable = true,
+        },
+        indent = { enable = true },
+      }
     end,
   },
   -- Add this line to the list of plugins in init.lua

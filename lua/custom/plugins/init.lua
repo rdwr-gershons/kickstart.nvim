@@ -40,53 +40,66 @@ return {
       { '<c-s>', mode = { 'c' }, function() require('flash').toggle() end, desc = 'Toggle Flash Search' },
     },
   },
+  -- Snippet Collection (friendly-snippets includes C++ snippets)
+  --{ 'rafamadriz/friendly-snippets' },
+  -- Autocompletion Plugin
+  --{
+  --'hrsh7th/cmp-nvim-lsp-signature-help',
+  --event = 'InsertEnter',
+  --dependencies = { 'hrsh7th/nvim-cmp' },
+  --},
   {
-    -- Snippet Engine
-    { 'L3MON4D3/LuaSnip' },
-    -- Snippet Collection (friendly-snippets includes C++ snippets)
-    { 'rafamadriz/friendly-snippets' },
-    -- Autocompletion Plugin
-    {
-      'hrsh7th/nvim-cmp',
-      dependencies = { 'L3MON4D3/LuaSnip' }, -- Ensure LuaSnip is a dependency
-    },
-    -- Optional: A specific C++ tool for advanced refactoring (like include guards)
-    { 'pogyomo/cppguard.nvim' },
+    'hrsh7th/nvim-cmp',
+    dependencies = {
+      --'hrsh7th/cmp-nvim-lsp',
+      'L3MON4D3/LuaSnip',
+      'saadparwaiz1/cmp_luasnip',
+      --'ray-x/lsp_signature.nvim',
+    }, -- Ensure LuaSnip is a dependency
+    config = function()
+      -- General nvim-cmp setup
+      local cmp = require 'cmp'
+      local luasnip = require 'luasnip'
+      --require('lsp_signature').setup {}
+
+      require('cmp').setup {
+        --snippet = {
+        --REQUIRED to make luasnip work with nvim-cmp
+        --expand = function(args)
+        --luasnip.lsp_expand(args.body) -- Use luasnip to expand snippets
+        --end,
+        --},
+        sources = cmp.config.sources({
+          { name = 'nvim_lsp' }, -- LSP completion
+          --{ name = 'luasnip' }, -- Snippets
+        }, {
+          { name = 'buffer' }, -- Buffer words
+        }),
+
+        -- Other nvim-cmp configuration options (mappings, etc.)
+        -- Example mapping to select and jump to next argument
+        mapping = cmp.mapping.preset.insert {
+          ['<C-y>'] = cmp.mapping.confirm { select = true }, -- Accept completion
+          ['<C-Space>'] = cmp.mapping.complete(), -- Manually trigger completion
+          ['<C-n>'] = cmp.mapping.select_next_item(), -- Select next item
+          ['<C-p>'] = cmp.mapping.select_prev_item(), -- Select previous item
+          ['<Tab>'] = cmp.mapping(function(fallback)
+            if luasnip.expand_or_jumpable() then
+              luasnip.expand_or_jump() -- Jump through snippet arguments
+            else
+              fallback()
+            end
+          end, { 'i', 's' }),
+        },
+      }
+    end,
   },
+  -- Optional: A specific C++ tool for advanced refactoring (like include guards)
+  { 'pogyomo/cppguard.nvim' },
   {
     'folke/trouble.nvim',
     opts = {}, -- Use opts = {} for default options, or customize as needed
     cmd = 'Trouble', -- Optional: lazy-load on command
-  },
-  {
-    'nvim-neotest/neotest',
-    dependencies = {
-      'nvim-neotest/nvim-nio',
-      'nvim-lua/plenary.nvim',
-      'antoinemadec/FixCursorHold.nvim',
-      {
-        'nvim-treesitter/nvim-treesitter', -- Optional, but recommended
-        branch = 'main', -- NOTE; not the master branch!
-        build = function() vim.cmd ':TSUpdate go' end,
-      },
-      {
-        'fredrikaverpil/neotest-golang',
-        version = '*', -- Optional, but recommended; track releases
-        build = function()
-          vim.system({ 'go', 'install', 'gotest.tools/gotestsum@latest' }):wait() -- Optional, but recommended
-        end,
-      },
-    },
-    config = function()
-      local config = {
-        runner = 'gotestsum', -- Optional, but recommended
-      }
-      require('neotest').setup {
-        adapters = {
-          require 'neotest-golang'(config),
-        },
-      }
-    end,
   },
   {
     'krady21/compiler-explorer.nvim',
@@ -147,15 +160,18 @@ return {
   {
     'nvim-neotest/neotest',
     dependencies = {
+      "nvim-neotest/nvim-nio",
       'nvim-lua/plenary.nvim',
+      "antoinemadec/FixCursorHold.nvim",
       'nvim-treesitter/nvim-treesitter',
       'fredrikaverpil/neotest-golang', -- The Go adapter
       'leoluz/nvim-dap-go', -- Dependency for Go debugging
     },
     keys = {
-      { '<leader>tt', function() require('neotest').run.run(vim.fn.expand '%') end, desc = 'Run File' },
-      { '<leader>tr', function() require('neotest').run.run() end, desc = 'Run Nearest' },
-      { '<leader>ts', function() require('neotest').summary.toggle() end, desc = 'Toggle Summary' },
+      { '<leader>tt', function() require('neotest').run.run(vim.fn.expand '%') end, desc = 'Run all File tests' },
+      { '<leader>tr', function() require('neotest').run.run() end, desc = 'Run Nearest Test' },
+      { '<leader>ts', function() require('neotest').summary.toggle() end, desc = 'Toggle Test Summary' },
+      { "<leader>to", function() require("neotest").output_panel.toggle() end, desc = "Show Test Output" },
     },
     config = function()
       require('neotest').setup {
@@ -170,6 +186,8 @@ return {
             dap_go_enabled = true,
             -- Disable warnings for duplicated test names
             warn_test_name_dupes = false,
+            -- Configuration for neotest-golang
+            go_test_args = { "-v", "-race", "-count=1", "-timeout=60s" },
           },
         },
         -- Optional: configure how test output is displayed
@@ -182,6 +200,30 @@ return {
         },
       }
     end,
+  },
+  {
+    'romgrk/barbar.nvim',
+    dependencies = {
+      'lewis6991/gitsigns.nvim', -- OPTIONAL: for git status
+      'nvim-tree/nvim-web-devicons', -- OPTIONAL: for file icons
+    },
+    keys = {
+      { '<A-,>', '<Cmd>BufferPrevious<CR>', desc = 'Previous buffer' },
+      { '<A-.>', '<Cmd>BufferNext<CR>', desc = 'Next buffer' },
+      { '<A-x>', '<Cmd>BufferClose<CR>', desc = 'Close current tab' },
+      { '<A-s>', '<cmd>BufferOrderByLanguage<CR>', desc = 'Order tabs by language' },
+    },
+    init = function() vim.g.barbar_auto_setup = false end,
+    opts = {
+      -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
+      --animation = true,
+      insert_at_start = true,
+      -- …etc.
+    },
+    config = function(_, opts)
+      require('barbar').setup(opts) -- Manually call setup
+    end,
+    -- version = '^1.0.0', -- optional: only update when a new 1.x version is released
   },
   {
     'olexsmir/gopher.nvim',
